@@ -34,9 +34,12 @@ I2 = zeros(r_rows, r_cols, 3);
 for ii = 2 : rows - 1
    for jj = 2 : cols - 1
        p = R * [ii jj 1]';
-       ri = round(p(1) - xrange(1));
-       rj = round(p(2) - yrange(1));
-       I2(ri, rj, :) = I1(ii, jj, :);
+       ri = (p(1) - xrange(1));
+       rj = (p(2) - yrange(1));
+       I2(floor(ri), floor(rj), :) = I1(ii, jj, :);
+       I2(ceil(ri), floor(rj), :) = I1(ii, jj, :);
+       I2(floor(ri), ceil(rj), :) = I1(ii, jj, :);
+       I2(ceil(ri), ceil(rj), :) = I1(ii, jj, :);
    end
 end
 
