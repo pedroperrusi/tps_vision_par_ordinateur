@@ -39,24 +39,35 @@ for ii = 2 : rows - 1
        I2(ri, rj, :) = I1(ii, jj, :);
    end
 end
-% [TODO]
 
 figure();imshow(uint8(I2));
 
 
 %% Backward warping with meshgrid & interp2
-I3 = zeros(r_rows, r_cols, 3);
-% We interpolate the pixels of I1 in I3
-% src image
-xx = 1 : cols;
-yy = 1 : rows;
-[X, Y] = meshgrid(xx, yy);
+
+iR = inv(R);
+
+% src image (not necessary)
+% xx = 1 : cols;
+% yy = 1 : rows;
+% [X, Y] = meshgrid(xx, yy);
 % dst image
-xx_i = 1 : 1 : r_cols;
-yy_i = 1 : 1 : r_rows;
-[X_i, Y_i] = meshgrid(xx_i, yy_i);
-I3 = interp2(xx, yy, I1, X_i, Y_i);
-figure();imshow(I3);
+[X_i, Y_i] = meshgrid(xrange, yrange);
+X_i = X_i';
+Y_i = Y_i';
+
+% Transform from dst to src
+x = (iR(1,1) * X_i + iR(1,2) * Y_i + iR(1,3));
+y = (iR(2,1) * X_i + iR(2,2) * Y_i + iR(2,3));
+z = (iR(3,1) * X_i + iR(3,2) * Y_i + iR(3,3));
+
+% apply interpolation
+II = double(I1); % conversion to double
+I3_r = interp2(II(:,:,1)', x./z, y./z, 'cubic');
+I3_g = interp2(II(:,:,2)', x./z, y./z, 'cubic');
+I3_b = interp2(II(:,:,3)', x./z, y./z, 'cubic');
+I3 = cat(3, I3_r, I3_g, I3_b);
+figure();imshow(uint8(I3));
 
 
 
