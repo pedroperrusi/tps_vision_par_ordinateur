@@ -18,9 +18,6 @@ for i = 1 : size(X1, 2)
     % Add to A matrix
     A = [ A;  Ai ];
 end
--x2(3).*x1 
-size(Ai)
-% size(A)
 
 [U,D,V] = svd(A);
 

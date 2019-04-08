@@ -29,18 +29,18 @@ imshow(K);
 I = [I1,I2];
 figure, imshow(I);
 
-[X,Y] = ginput(8); %Ask for 8 points
-save('tps_ginput','X','Y');
-%load('tps_ginput');
+% [X,Y] = ginput(8); %Ask for 8 points
+% save('tps_ginput','X','Y');
+load('tps_ginput');
 
 [M,N,t] = size(I1);
 n = size(X,1);
-X1 = zeros(3,n/2);
-X2 = zeros(3,n/2);
+X1 = ones(3,n/2);
+X2 = ones(3,n/2);
 
 %... [TODO] define X1 and X2 from X and Y to get corresponding points in image coordinates
-X1 = [X(1 : 2 : end)]
-
+X1(1 : 2, ) = [X(1 : 2 : end)'; Y(1 : 2 : end)' ; zeros(size(Y(1 : 2 : end),1))];
+X2 = [X(2 : 2 : end)'; Y(2 : 2 : end)'; zeros(size(Y(2 : 2 : end),1))];
 
 %% Compute homography
 
@@ -58,9 +58,11 @@ imshow(K);
 
 %% Use all potential matches to compute the homography
 
-load('tps_matches.mat');
+load('../data/tps_matches.mat');
 
-%...  [TODO] define X1 and X2
+% We computee the homogeneous coordinates
+X1 = [m1; ones(1, size(m1,2))];
+X2 = [m2; ones(1, size(m2,2))];
 
 H = homography(X1,X2);  % H maps from I1 to I2
 
@@ -70,16 +72,37 @@ K = blend(I1,I2,H);
 figure(5);   %(due to the remaining outliers, an incorrect transformation may have been computed)
 imshow(K);
 
-
-
-
-
 %% Use RANSAC to detect inliers and compute homography
 tr=6;
-numMatches = size(m1,2) 
+numMatches = size(m1,2);
 
-%...  [TODO]
+H_candidates = {};
+inliners_candidates = {};
+scores = [];
+% try 100 times
+for i = 1 : 100
+    % generate a random index
+    idxs = randperm(numMatches, 4);
 
+    Y1 = [];
+    Y2 = [];
+    for idx = idxs
+        Y1 = [Y1 X1(:,idx)];
+        Y2 = [Y2 X2(:,idx)];
+    end
+    H_candidates{i} = homography(Y1, Y2);
+    
+    % score homography
+    X2_ = H_candidates{i} * X1;
+    du = X2_(1,:)./X2_(3,:) - X2(1,:)./X2(3,:);
+    dv = X2_(2,:)./X2_(3,:) - X2(2,:)./X2(3,:);
+    inliners_candidates{i} = (du.*du + dv.*dv) < tr*tr;
+    scores(i) = sum(inliners_candidates{i});
+end
+
+[score, best] = max(scores);
+H = H_candidates{best};
+inliners = inliners_candidates{best};
 
 
 %% Display matches before and after RANSAC
@@ -98,8 +121,9 @@ figure(6);
 imshow(K);
 
 %% Results when recomputing homography with inliers
-
-H =  homography(X1(:,inliers) , X2(:,inliers)); %...  [TODO] Define 'inliers'
+% inliers is oposed to inliners
+inliers = ~inliners; 
+H =  homography(X1(:,inliers) , X2(:,inliers)); 
 
 K = blend(I1,I2,H);
 
