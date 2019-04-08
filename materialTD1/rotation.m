@@ -2,7 +2,7 @@ clear all; close all;
 
 %% Load image
 
-I1 = imread('tps1.jpg');
+I1 = imread('../data/tps1.jpg');
 [rows, cols, ~] = size(I1);
 figure();imshow(I1);
 

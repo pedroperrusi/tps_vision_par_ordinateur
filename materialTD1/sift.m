@@ -3,8 +3,8 @@ clear all; close all;
 addpath(genpath('./'))
 
 %% Load and display image
-I1 = imread('tps1.jpg');
-I2 = imread('tps2.jpg');
+I1 = imread('../data/tps1.jpg');
+I2 = imread('../data/tps2.jpg');
 
 im1 = im2single(rgb2gray(I1)); 
 im2 = im2single(rgb2gray(I2)); 
@@ -55,11 +55,11 @@ ImageMatch(1 : size(im2, 1), size(im1, 2) : colsMatch - 1) = im2;
 figure();
 imshow(ImageMatch); hold on;
 for i = 1 : length(m1)
-   if(m1(i) ~= 0)
-       line(SIFT_P1(:, i)', [0 size(im1, 2)] + SIFT_P2(:, m1(i))')
-   end
+    pt1 = m1(i);
+   pt2 = [size(im1, 1) 0]' + m2(i);
+   plot([pt1(1) pt2(1)], [pt1(2) pt2(2)], 'b:')
+%        plot([pt1(1) pt2(1)], [pt1(2) pt2(2)], 'b+')
 end
-
 
 %% Save matched features for later
 save('tps_matches.mat','m1','m2');
